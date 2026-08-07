@@ -1,15 +1,39 @@
-const axios = require('axios');
-const path = require('node:path');
-const process = require('node:process');
-const setInterceptor = require('./service/token-refresher')
+import axios from 'axios';
+import path from 'node:path';
+import process from 'node:process';
+import OrgAuthorizer from './service/org-authorizer';
 
-const envPath = path.resolve(__dirname, '../.env');
-process.loadEnvFile(envPath);
+export default class Factory {
+    domain = '';
+    consumerKey = '';
+    secret = '';
+    envFilePath = '../.env';
 
-const domain = process.env.SF_ORG_DOMAIN;
-const consumerKey = process.env.SF_CONSUMER_KEY;
-const secret = process.env.SF_CONSUMER_SECRET;
+    initialize(){
+        const [domain, consumerKey, secret] = this.getEnvParams();
+        const sfConnector = axios.create({baseURL : 'https://' + domain})
 
-const sfConnector = axios.create({baseURL : 'https://' + domain})
+        const connectionParams = {
+            clientId : consumerKey,
+            clientSecret: secret,
+        }
 
-setInterceptor(sfConnector, {domain, consumerKey, secret});
+        const authorizer = new OrgAuthorizer(sfConnector, connectionParams);
+
+        authorizer.setClientInterceptor();
+
+        return sfConnector;
+    }
+
+    getEnvParams(){
+        process.loadEnvFile(
+            path.resolve(import.meta.dirname, this.envFilePath)
+        );
+
+        const domain = process.env.SF_ORG_DOMAIN;
+        const consumerKey = process.env.SF_CONSUMER_KEY;
+        const secret = process.env.SF_CONSUMER_SECRET;
+
+        return [domain, consumerKey, secret];
+    }
+}
