@@ -1,4 +1,4 @@
-import { SF_TOKEN_ENDPOINT, GRANT_TYPE, AUTHORIZATION_HEADER, fetchAccessToken } from "./authHelper";
+import { SF_TOKEN_ENDPOINT, GRANT_TYPE, AUTHORIZATION_HEADER, fetchAccessToken } from "./authHelper.js";
 
 export default class OrgAuthorizer {
     connectionParams = {};

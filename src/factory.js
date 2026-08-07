@@ -1,7 +1,7 @@
 import axios from 'axios';
 import path from 'node:path';
 import process from 'node:process';
-import OrgAuthorizer from './service/org-authorizer';
+import OrgAuthorizer from './service/org-authorizer.js';
 
 export default class Factory {
     domain = '';
@@ -20,7 +20,9 @@ export default class Factory {
 
         const authorizer = new OrgAuthorizer(sfConnector, connectionParams);
 
+        authorizer.processTokenFetch();
         authorizer.setClientInterceptor();
+
 
         return sfConnector;
     }
