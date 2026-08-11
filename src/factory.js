@@ -1,7 +1,9 @@
 import axios from 'axios';
 import path from 'node:path';
 import process from 'node:process';
-import OrgAuthorizationService from './service/org-authorization-service.js';
+import OauthTokenClient from './client/salesforce/oauth-token-client.js';
+import TokenManager from './client/salesforce/token-manager.js';
+import ClientConfigurer from './client/salesforce/client-configurer.js';
 
 export default class Factory {
     domain = '';
@@ -9,22 +11,42 @@ export default class Factory {
     secret = '';
     envFilePath = '../.env';
 
-    initialize(){
+    AUTH_CLIENT_HEADERS = {
+        'Content-Type': 'application/x-www-form-urlencoded' 
+    };
+
+    API_CLIENT_HEADERS = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
+
+    async initialize(){
         const [domain, consumerKey, secret] = this.getEnvParams();
-        const sfConnector = axios.create({baseURL : 'https://' + domain})
+        
+        const authHttpClient = axios.create({
+            baseURL : 'https://' + domain,
+            headers: this.AUTH_CLIENT_HEADERS
+        });
 
         const connectionParams = {
             clientId : consumerKey,
             clientSecret: secret,
         }
 
-        const authorizer = new OrgAuthorizationService(sfConnector, connectionParams);
+        const oauthClient = new OauthTokenClient(authHttpClient, connectionParams);
+        const tokenManager = new TokenManager(oauthClient);
 
-        authorizer.processTokenFetch();
-        authorizer.setClientInterceptor();
+        const apiHttpClient = axios.create({
+            baseURL : 'https://' + domain,
+            headers: this.API_CLIENT_HEADERS
+        });
+
+        const clientConfigurer = new ClientConfigurer(apiHttpClient, tokenManager);
+
+        clientConfigurer.setClientInterceptors();
 
 
-        return sfConnector;
+        return apiHttpClient;
     }
 
     getEnvParams(){
