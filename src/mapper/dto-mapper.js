@@ -12,7 +12,7 @@ export default class DtoMapper {
     mapJsonToDto(jsonItem, fieldsMap) {
 
         if (!jsonItem || typeof jsonItem !== 'object') {
-            return new this.dtoClass();
+            return null;
         }
 
         const rawData = {};
