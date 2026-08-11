@@ -1,15 +1,10 @@
 import axios from 'axios';
-import path from 'node:path';
-import process from 'node:process';
-import OauthTokenClient from './client/salesforce/oauth-token-client.js';
-import TokenManager from './client/salesforce/token-manager.js';
-import ClientConfigurer from './client/salesforce/client-configurer.js';
+import OauthTokenClient from './salesforce/oauth-token-client.js';
+import TokenManager from './salesforce/token-manager.js';
+import ClientConfigurer from './salesforce/client-configurer.js';
+import FileReader from '../io/file-reader.js';
 
-export default class Factory {
-    domain = '';
-    consumerKey = '';
-    secret = '';
-    envFilePath = '../.env';
+export default class HttpClientBuilder {
 
     AUTH_CLIENT_HEADERS = {
         'Content-Type': 'application/x-www-form-urlencoded' 
@@ -20,8 +15,8 @@ export default class Factory {
         'Accept': 'application/json'
     };
 
-    async initialize(){
-        const [domain, consumerKey, secret] = this.getEnvParams();
+    async build(coreValues = []){
+        const [domain, consumerKey, secret] = coreValues;
         
         const authHttpClient = axios.create({
             baseURL : 'https://' + domain,
@@ -46,17 +41,5 @@ export default class Factory {
         clientConfigurer.setClientInterceptors();
 
         return apiHttpClient;
-    }
-
-    getEnvParams(){
-        process.loadEnvFile(
-            path.resolve(import.meta.dirname, this.envFilePath)
-        );
-
-        const domain = process.env.SF_ORG_DOMAIN;
-        const consumerKey = process.env.SF_CONSUMER_KEY;
-        const secret = process.env.SF_CONSUMER_SECRET;
-
-        return [domain, consumerKey, secret];
     }
 }
