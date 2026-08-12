@@ -9,12 +9,12 @@ export default class ClientConfigurer {
 
     setClientInterceptors(){
         this.apiClient.interceptors.request.use(
-            async (config) => await this.#setTokenInRequestConfig(config)
+            (config) => this.#setTokenInRequestConfig(config)
         );
 
         this.apiClient.interceptors.response.use(
             (response) => response,
-            async (error) => await this.#processUnauthorizedErrorResponse(error)
+            (error) => this.#processUnauthorizedErrorResponse(error)
         );
 }
 

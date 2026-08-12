@@ -39,7 +39,7 @@ export default class OauthTokenManager {
         if (this.currentToken) {
             return this.currentToken;
         }
-        return await this.refreshToken();
+        return this.refreshToken();
     }
     
     #setRequestParams(){
