@@ -1,18 +1,24 @@
+import axios from "axios";
+
 export default class OauthTokenManager {
 
-    SF_TOKEN_ENDPOINT = '/services/oauth2/token';
-    GRANT_TYPE = 'client_credentials';
+    #AUTH_CLIENT_HEADERS = {
+        'Content-Type': 'application/x-www-form-urlencoded' 
+    };
 
-    ACCESS_TOKEN_KEY = 'access_token';
+    #SF_TOKEN_ENDPOINT = '/services/oauth2/token';
+    #GRANT_TYPE = 'client_credentials';
 
-    httpClient = null;
+    #ACCESS_TOKEN_KEY = 'access_token';
 
-    currentToken = '';
-    connParams= {};
+    #authClient = null;
+    #currentToken = '';
 
-    constructor(httpClient = null, connParams = {}){
-        this.httpClient = httpClient;
+    connParams = {};
+
+    constructor(connParams = {}){
         this.connParams = connParams;
+        this.#authClient = this.#initializeAuthClient();
     }
 
     async refreshToken(){
@@ -20,8 +26,8 @@ export default class OauthTokenManager {
 
         try {
 
-            const response = await this.httpClient.post(this.SF_TOKEN_ENDPOINT, params)
-            this.currentToken = response.data[this.ACCESS_TOKEN_KEY];
+            const response = await this.#authClient.post(this.#SF_TOKEN_ENDPOINT, params)
+            this.#currentToken = response.data[this.#ACCESS_TOKEN_KEY];
 
         } catch (error){
 
@@ -32,21 +38,28 @@ export default class OauthTokenManager {
         }
 
         console.log('Token is successfully received');
-        return this.currentToken;
+        return this.#currentToken;
     }
     
     async getToken() {
-        if (this.currentToken) {
-            return this.currentToken;
+        if (this.#currentToken) {
+            return this.#currentToken;
         }
         return this.refreshToken();
     }
     
     #setRequestParams(){
         return new URLSearchParams({
-            grant_type : this.GRANT_TYPE,
+            grant_type : this.#GRANT_TYPE,
             client_id : this.connParams.clientId,
             client_secret: this.connParams.clientSecret,
         })
+    }
+
+    #initializeAuthClient(){
+        return axios.create({
+            baseURL : 'https://' + this.connParams.domain,
+            headers: {...this.#AUTH_CLIENT_HEADERS}
+        });
     }
 }

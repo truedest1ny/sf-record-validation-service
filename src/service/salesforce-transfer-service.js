@@ -2,8 +2,8 @@ import { mapDtoToSalesforcePayment } from "../mapper/mapper-helper.js";
 
 export default class SalesforceTransferService {
     apiClient = null;
-    apiVersion = 'v66.0';
-    endpoint = `/services/data/${this.apiVersion}/composite/sobjects`;
+    #API_VERSION = 'v66.0';
+    #OBJECTS_CREATE_ENDPOINT = `/services/data/${this.#API_VERSION}/composite/sobjects`;
 
     constructor(apiClient = null) {
         this.apiClient = apiClient;
@@ -24,7 +24,7 @@ export default class SalesforceTransferService {
         }));
 
         try {
-            const response = await this.apiClient.post(this.endpoint, {
+            const response = await this.apiClient.post(this.#OBJECTS_CREATE_ENDPOINT, {
                 allOrNone,
                 records: payload
             });
