@@ -1,8 +1,6 @@
 import axios from 'axios';
 import OauthTokenClient from './salesforce/oauth-token-client.js';
-import TokenManager from './salesforce/token-manager.js';
 import ClientConfigurer from './salesforce/client-configurer.js';
-import FileReader from '../io/file-reader.js';
 
 export default class HttpClientBuilder {
 
@@ -15,7 +13,7 @@ export default class HttpClientBuilder {
         'Accept': 'application/json'
     };
 
-    async build(coreValues = []){
+    build(coreValues = []){
         const [domain, consumerKey, secret] = coreValues;
         
         const authHttpClient = axios.create({
@@ -29,14 +27,13 @@ export default class HttpClientBuilder {
         }
 
         const oauthClient = new OauthTokenClient(authHttpClient, connectionParams);
-        const tokenManager = new TokenManager(oauthClient);
 
         const apiHttpClient = axios.create({
             baseURL : 'https://' + domain,
             headers: this.API_CLIENT_HEADERS
         });
 
-        const clientConfigurer = new ClientConfigurer(apiHttpClient, tokenManager);
+        const clientConfigurer = new ClientConfigurer(apiHttpClient, oauthClient);
 
         clientConfigurer.setClientInterceptors();
 

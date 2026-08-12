@@ -6,6 +6,8 @@ export default class OauthTokenClient {
     GRANT_TYPE = 'client_credentials';
 
     httpClient = null;
+
+    currentToken = '';
     connParams= {};
 
     constructor(httpClient = null, connParams = {}){
@@ -21,11 +23,18 @@ export default class OauthTokenClient {
         })
     }
 
-    async fetchToken(){
+    async refreshToken(){
         const params = this.setRequestParams();
 
-        const token = await fetchAccessToken(this.httpClient, this.SF_TOKEN_ENDPOINT, params);
+        this.currentToken = await fetchAccessToken(this.httpClient, this.SF_TOKEN_ENDPOINT, params);
         console.log('Token is successfully received');
-        return token;
-    }  
+        return this.currentToken;
+    }
+    
+    async getToken() {
+        if (this.currentToken) {
+            return this.currentToken;
+        }
+        return await this.refreshToken();
+    }
 }

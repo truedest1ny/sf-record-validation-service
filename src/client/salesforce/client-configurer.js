@@ -1,16 +1,16 @@
 import { getAuthorizationHeader } from "./token-process-helper.js";
 
 export default class ClientConfigurer {
-    tokenManager = null;
-    httpClient = null;
+    oathClient = null;
+    apiClient = null;
 
-    constructor(httpClient = {}, tokenManager = {}){
-        this.tokenManager = tokenManager;
-        this.httpClient = httpClient;
+    constructor(apiClient = {},  oathClient = {}){
+        this.apiClient = apiClient;
+        this.oathClient = oathClient;
     }
 
     async setTokenInRequestConfig(config){
-        const token = await this.tokenManager.getToken();
+        const token = await this.oathClient.getToken();
         config.headers.Authorization = getAuthorizationHeader(token);
         console.log('Token set to header request');
         return config;
@@ -23,13 +23,12 @@ export default class ClientConfigurer {
             originalRequest._retry = true;
             
             try {
-                this.tokenManager.clearToken();
-                const newToken = await this.tokenManager.refreshToken();
+                const newToken = await this.oathClient.refreshToken();
 
                 console.log('Token refreshed')
                 originalRequest.headers['Authorization'] = getAuthorizationHeader(newToken);
     
-                return await this.httpClient.request(originalRequest);
+                return await this.apiClient.request(originalRequest);
     
             } catch (error){
                 return Promise.reject(error);
@@ -40,11 +39,11 @@ export default class ClientConfigurer {
     }
 
     setClientInterceptors(){
-        this.httpClient.interceptors.request.use(
+        this.apiClient.interceptors.request.use(
             async (config) => await this.setTokenInRequestConfig(config)
         );
 
-        this.httpClient.interceptors.response.use(
+        this.apiClient.interceptors.response.use(
             (response) => response,
             async (error) => await this.processUnauthorizedErrorResponse(error)
         );
