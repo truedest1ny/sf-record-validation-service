@@ -1,15 +1,15 @@
 import {buildNormalizedFieldsMap, getInstanceFieldsByClass} from "./mapper-helper.js";
 
 export default class DtoMapper {
-    dtoClass = null;
-    jsonData = [];
+    #dtoClass = null;
+    #jsonData = [];
 
     constructor(dtoClass = null, jsonData = []){
-        this.dtoClass = dtoClass;
-        this.jsonData = jsonData;
+        this.#dtoClass = dtoClass;
+        this.#jsonData = jsonData;
     }
 
-    mapJsonToDto(jsonItem, fieldsMap) {
+    #mapJsonToDto(jsonItem, fieldsMap) {
 
         if (!jsonItem || typeof jsonItem !== 'object') {
             return null;
@@ -26,13 +26,13 @@ export default class DtoMapper {
                 rawData[targetDtoField] = value;
             }
         }
-        return new this.dtoClass(rawData);
+        return new this.#dtoClass(rawData);
     }
 
     parseJsonData() {
-        const dtoFields = getInstanceFieldsByClass(this.dtoClass);
+        const dtoFields = getInstanceFieldsByClass(this.#dtoClass);
         const fieldMap = buildNormalizedFieldsMap(dtoFields);
 
-        return this.jsonData.map((item) => this.mapJsonToDto(item, fieldMap));
+        return this.#jsonData.map((item) => this.#mapJsonToDto(item, fieldMap));
     }
 }

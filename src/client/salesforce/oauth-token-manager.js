@@ -14,10 +14,11 @@ export default class OauthTokenManager {
     #authClient = null;
     #currentToken = '';
 
-    connParams = {};
+    constructor({domain, consumerKey, secret}){
+        this.domain = domain;
+        this.consumerKey = consumerKey;
+        this.secret = secret;
 
-    constructor(connParams = {}){
-        this.connParams = connParams;
         this.#authClient = this.#initializeAuthClient();
     }
 
@@ -51,14 +52,14 @@ export default class OauthTokenManager {
     #setRequestParams(){
         return new URLSearchParams({
             grant_type : this.#GRANT_TYPE,
-            client_id : this.connParams.clientId,
-            client_secret: this.connParams.clientSecret,
+            client_id : this.consumerKey,
+            client_secret: this.secret,
         })
     }
 
     #initializeAuthClient(){
         return axios.create({
-            baseURL : 'https://' + this.connParams.domain,
+            baseURL : 'https://' + this.domain,
             headers: {...this.#AUTH_CLIENT_HEADERS}
         });
     }

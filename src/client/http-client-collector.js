@@ -9,26 +9,21 @@ export default class HttpClientCollector {
         'Accept': 'application/json'
     };
 
-    create(coreValues = []){
-        const [domain, consumerKey, secret] = coreValues;
-
-        const connectionParams = {
-            domain : domain,
-            clientId : consumerKey,
-            clientSecret: secret,
-        }
-        
-        const tokenManager = new OauthTokenManager(connectionParams);
-
-        const apiHttpClient = axios.create({
-            baseURL : 'https://' + domain,
-            headers: {...this.#API_CLIENT_HEADERS}
-        });
-
+    create({domain, consumerKey, secret}){
+        const tokenManager = new OauthTokenManager({domain, consumerKey, secret});
+        const apiHttpClient = this.#initializeApiClient(domain);
         const clientConfigurer = new ClientConfigurer(apiHttpClient, tokenManager);
 
         clientConfigurer.setClientInterceptors();
 
         return apiHttpClient;
+    }
+
+    #initializeApiClient(domain){
+        return axios.create({
+            baseURL : 'https://' + domain,
+            headers: {...this.#API_CLIENT_HEADERS}
+        });
+
     }
 }

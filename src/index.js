@@ -21,15 +21,23 @@ const data = {
   ]
 };
 
+const DOMAIN_KEY = 'SF_ORG_DOMAIN';
+const CLIENT_KEY = 'SF_CONSUMER_KEY';
+const SECRET_KEY = 'SF_CONSUMER_SECRET';
+
 async function main() {
 
-  const envParamsValues = EnvFileReader.getParamsValues(
+  const envParams = EnvFileReader.getEnvParams(
       '.env', 
-      ['SF_ORG_DOMAIN', 'SF_CONSUMER_KEY', 'SF_CONSUMER_SECRET']
+      [DOMAIN_KEY, CLIENT_KEY, SECRET_KEY]
   );
 
     const clientCollector = new HttpClientCollector(); 
-    const apiClient = await clientCollector.create(envParamsValues);
+    const apiClient = clientCollector.create({
+        domain: envParams[DOMAIN_KEY],
+        consumerKey: envParams[CLIENT_KEY],
+        secret: envParams[SECRET_KEY],
+    });
     const transferService = new SalesforceTransferService(apiClient);
 
   const app = express();

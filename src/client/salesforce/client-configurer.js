@@ -1,25 +1,25 @@
 export default class ClientConfigurer {
-    tokenManager = null;
-    apiClient = null;
+    #tokenManager = null;
+    #apiClient = null;
 
     constructor(apiClient = {},  tokenManager = {}){
-        this.apiClient = apiClient;
-        this.tokenManager = tokenManager;
+        this.#apiClient = apiClient;
+        this.#tokenManager = tokenManager;
     }
 
     setClientInterceptors(){
-        this.apiClient.interceptors.request.use(
+        this.#apiClient.interceptors.request.use(
             (config) => this.#setTokenInRequestConfig(config)
         );
 
-        this.apiClient.interceptors.response.use(
+        this.#apiClient.interceptors.response.use(
             (response) => response,
             (error) => this.#processUnauthorizedErrorResponse(error)
         );
 }
 
     async #setTokenInRequestConfig(config){
-        const token = await this.tokenManager.getToken();
+        const token = await this.#tokenManager.getToken();
         config.headers['Authorization'] = this.#getAuthorizationHeader(token);
         console.log('Token set to header request');
         return config;
@@ -35,12 +35,12 @@ export default class ClientConfigurer {
             originalRequest._retry = true;
             
             try {
-                const newToken = await this.tokenManager.refreshToken();
+                const newToken = await this.#tokenManager.refreshToken();
 
                 console.log('Token refreshed')
                 originalRequest.headers['Authorization'] = this.#getAuthorizationHeader(newToken);
     
-                return await this.apiClient.request(originalRequest);
+                return await this.#apiClient.request(originalRequest);
     
             } catch (error){
                 return Promise.reject(error);
