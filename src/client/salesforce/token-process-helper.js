@@ -1,7 +1,6 @@
-export const SF_TOKEN_ENDPOINT = '/services/oauth2/token';
-export const GRANT_TYPE = 'client_credentials';
-
-export const AUTHORIZATION_HEADER = 'Authorization';
+export function getAuthorizationHeader(token){
+    return `Bearer ${token}`;
+}
 
 export async function fetchAccessToken(client, endpoint, requestParams){
     try {
