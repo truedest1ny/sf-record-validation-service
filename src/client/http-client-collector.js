@@ -1,8 +1,8 @@
 import axios from 'axios';
-import OauthTokenClient from './salesforce/oauth-token-client.js';
 import ClientConfigurer from './salesforce/client-configurer.js';
+import OauthTokenManager from './salesforce/oauth-token-manager.js';
 
-export default class HttpClientBuilder {
+export default class HttpClientCollector {
 
     AUTH_CLIENT_HEADERS = {
         'Content-Type': 'application/x-www-form-urlencoded' 
@@ -13,7 +13,7 @@ export default class HttpClientBuilder {
         'Accept': 'application/json'
     };
 
-    build(coreValues = []){
+    create(coreValues = []){
         const [domain, consumerKey, secret] = coreValues;
         
         const authHttpClient = axios.create({
@@ -26,14 +26,14 @@ export default class HttpClientBuilder {
             clientSecret: secret,
         }
 
-        const oauthClient = new OauthTokenClient(authHttpClient, connectionParams);
+        const tokenManager = new OauthTokenManager(authHttpClient, connectionParams);
 
         const apiHttpClient = axios.create({
             baseURL : 'https://' + domain,
             headers: this.API_CLIENT_HEADERS
         });
 
-        const clientConfigurer = new ClientConfigurer(apiHttpClient, oauthClient);
+        const clientConfigurer = new ClientConfigurer(apiHttpClient, tokenManager);
 
         clientConfigurer.setClientInterceptors();
 

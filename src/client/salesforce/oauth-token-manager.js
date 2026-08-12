@@ -1,6 +1,6 @@
 import {fetchAccessToken} from "./token-process-helper.js";
 
-export default class OauthTokenClient {
+export default class OauthTokenManager {
 
     SF_TOKEN_ENDPOINT = '/services/oauth2/token';
     GRANT_TYPE = 'client_credentials';

@@ -1,16 +1,16 @@
 import { getAuthorizationHeader } from "./token-process-helper.js";
 
 export default class ClientConfigurer {
-    oathClient = null;
+    oathManager = null;
     apiClient = null;
 
-    constructor(apiClient = {},  oathClient = {}){
+    constructor(apiClient = {},  oathManager = {}){
         this.apiClient = apiClient;
-        this.oathClient = oathClient;
+        this.oathManager = oathManager;
     }
 
     async setTokenInRequestConfig(config){
-        const token = await this.oathClient.getToken();
+        const token = await this.oathManager.getToken();
         config.headers.Authorization = getAuthorizationHeader(token);
         console.log('Token set to header request');
         return config;
@@ -23,7 +23,7 @@ export default class ClientConfigurer {
             originalRequest._retry = true;
             
             try {
-                const newToken = await this.oathClient.refreshToken();
+                const newToken = await this.oathManager.refreshToken();
 
                 console.log('Token refreshed')
                 originalRequest.headers['Authorization'] = getAuthorizationHeader(newToken);
