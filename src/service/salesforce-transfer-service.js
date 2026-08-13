@@ -12,11 +12,13 @@ export default class SalesforceTransferService {
     async createObjects(sObjectName = 'Payment__c',
                         dtos = [],
                         mappingFunction = mapDtoToSalesforcePayment,
-                        allOrNone = false) {
+                        salesforceDmlConfig = {allOrNone: false}) {
                             
         if (!Array.isArray(dtos) || dtos.length === 0) {
             return [];
         }
+
+        const {allOrNone} = salesforceDmlConfig;
 
         const payload = dtos.map((dto) => ({
             attributes: { type: sObjectName },

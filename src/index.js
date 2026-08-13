@@ -48,7 +48,7 @@ async function main() {
       const dtos = mapper.parseJsonData();
 
       const sfResponse = await transferService.createObjects(
-        'Payment__c', dtos, mapDtoToSalesforcePayment, false);
+        'Payment__c', dtos, mapDtoToSalesforcePayment, {allOrNone : false});
 
       res.json({
           success: true,
