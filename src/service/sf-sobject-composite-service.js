@@ -5,13 +5,17 @@ export default class SalesforceSObjectCompositeService {
     #API_VERSION = 'v66.0';
     #RECORDS_CREATE_ENDPOINT = `/services/data/${this.#API_VERSION}/composite/sobjects`;
 
-    constructor(apiClient = null) {
+    constructor(apiClient) {
+        if (!apiClient || typeof apiClient.post !== 'function') {
+            throw new TypeError('Client must provide HTTP POST Method')
+        }
+
         this.#apiClient = apiClient;
     }
 
     async createRecords(sObjectName = 'Payment__c',
                         dtos = [],
-                        mappingFunction = mapDtoToSalesforcePayment,
+                        mappingFunction,
                         salesforceDmlConfig = {allOrNone: false}) {
                             
         if (!Array.isArray(dtos) || dtos.length === 0) {

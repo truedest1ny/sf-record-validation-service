@@ -2,7 +2,9 @@ export default class HttpClientConfigurer {
     #tokenManager = null;
     #apiClient = null;
 
-    constructor(apiClient = {},  tokenManager = {}){
+    constructor(apiClient, tokenManager){
+        this.#validateIncomingParams(apiClient, tokenManager)
+
         this.#apiClient = apiClient;
         this.#tokenManager = tokenManager;
     }
@@ -20,16 +22,20 @@ export default class HttpClientConfigurer {
 
     async #setTokenInRequestConfig(config){
         const token = await this.#tokenManager.getToken();
-        config.headers['Authorization'] = this.#getAuthorizationHeader(token);
-        console.log('Token set to header request');
-        return config;
+        if (token){
+
+            config.headers['Authorization'] = this.#getAuthorizationHeader(token);
+            console.log('Token set to header request');
+            return config;
+
+        } else throw new Error('Error while getting token');
+
     }
 
     async #processUnauthorizedErrorResponse(errorResponse){
         const originalRequest = errorResponse.config;
     
-        if (errorResponse.response && 
-            errorResponse.response.status === 401 && 
+        if (errorResponse.response?.status === 401 && 
             !originalRequest._retry){
 
             originalRequest._retry = true;
@@ -52,5 +58,23 @@ export default class HttpClientConfigurer {
 
     #getAuthorizationHeader(token){
         return `Bearer ${token}`;
+    }
+
+    #validateIncomingParams(apiClient, tokenManager){
+        if (!apiClient ||
+            !apiClient.interceptors?.request ||
+            !apiClient.interceptors?.response) {
+            throw new TypeError('Client must have request-response interceptors to configurate')
+        }
+
+        if (typeof apiClient.request !== 'function'){
+            throw new TypeError('Client must have request sending method')
+        }
+
+        if (!tokenManager ||
+            typeof tokenManager.getToken !== 'function' ||
+            typeof tokenManager.fetchAccessToken !== 'function'){
+            throw new TypeError ('Token manager must provide token getting methods')
+        }
     }
 }

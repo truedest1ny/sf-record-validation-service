@@ -15,6 +15,11 @@ export default class OauthTokenManager {
     #currentToken = '';
 
     constructor({domain, consumerKey, secret}){
+
+        if (!domain?.trim() || !consumerKey?.trim() || !secret.trim()){
+            throw new TypeError('Connection parameters must be inialized!');
+        }
+
         this.domain = domain;
         this.consumerKey = consumerKey;
         this.secret = secret;

@@ -11,6 +11,10 @@ export default class HttpClientFactory {
 
     createClient({domain, consumerKey, secret}){
 
+        if (!domain?.trim() || !consumerKey?.trim() || !secret.trim()){
+            throw new TypeError('Connection parameters must be inialized!');
+        }
+
         const tokenManager = new OauthTokenManager({domain, consumerKey, secret});
         const apiHttpClient = this.#initializeApiClient(domain);
         const clientConfigurer = new HttpClientConfigurer(apiHttpClient, tokenManager);
