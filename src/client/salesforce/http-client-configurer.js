@@ -1,4 +1,4 @@
-export default class ClientConfigurer {
+export default class HttpClientConfigurer {
     #tokenManager = null;
     #apiClient = null;
 
@@ -35,7 +35,7 @@ export default class ClientConfigurer {
             originalRequest._retry = true;
             
             try {
-                const newToken = await this.#tokenManager.refreshToken();
+                const newToken = await this.#tokenManager.fetchAccessToken();
 
                 console.log('Token refreshed')
                 originalRequest.headers['Authorization'] = this.#getAuthorizationHeader(newToken);

@@ -18,7 +18,7 @@ export default class SalesforcePaymentController {
             const mapper = new DtoMapper(PaymentDto, rawPayments);
             const dtos = mapper.parseJsonData();
     
-            const sfResponse = await this.#transferService.createObjects(
+            const sfResponse = await this.#transferService.createRecords(
             'Payment__c', dtos, mapDtoToSalesforcePayment, {allOrNone : false});
     
             res.status(201).json({

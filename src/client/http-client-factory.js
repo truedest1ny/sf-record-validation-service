@@ -1,18 +1,19 @@
 import axios from 'axios';
-import ClientConfigurer from './salesforce/client-configurer.js';
+import HttpClientConfigurer from './salesforce/http-client-configurer.js';
 import OauthTokenManager from './salesforce/oauth-token-manager.js';
 
-export default class HttpClientCollector {
+export default class HttpClientFactory {
 
     #API_CLIENT_HEADERS = {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     };
 
-    create({domain, consumerKey, secret}){
+    createClient({domain, consumerKey, secret}){
+
         const tokenManager = new OauthTokenManager({domain, consumerKey, secret});
         const apiHttpClient = this.#initializeApiClient(domain);
-        const clientConfigurer = new ClientConfigurer(apiHttpClient, tokenManager);
+        const clientConfigurer = new HttpClientConfigurer(apiHttpClient, tokenManager);
 
         clientConfigurer.setClientInterceptors();
 

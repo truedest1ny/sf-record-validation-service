@@ -22,7 +22,7 @@ export default class OauthTokenManager {
         this.#authClient = this.#initializeAuthClient();
     }
 
-    async refreshToken(){
+    async fetchAccessToken(){
         const params = this.#setRequestParams();
 
         try {
@@ -46,7 +46,7 @@ export default class OauthTokenManager {
         if (this.#currentToken) {
             return this.#currentToken;
         }
-        return this.refreshToken();
+        return this.fetchAccessToken();
     }
     
     #setRequestParams(){
