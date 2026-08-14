@@ -11,8 +11,11 @@ export default class OauthTokenManager {
 
     #ACCESS_TOKEN_KEY = 'access_token';
 
+    #DEFAULT_TOKEN_EXP_MS = 7_200_000;
+
     #authClient = null;
     #currentToken = '';
+    #tokenExpiresAt = 0;
 
     #cachedPromise = null;
 
@@ -43,6 +46,9 @@ export default class OauthTokenManager {
                 console.log(response.data);
                 this.#currentToken = response.data[this.#ACCESS_TOKEN_KEY];
 
+                this.#tokenExpiresAt =
+                    Number(response.data?.issued_at) || Date.now() + this.#DEFAULT_TOKEN_EXP_MS;
+
                 console.log('Token is successfully received');
                 return this.#currentToken;
 
@@ -63,7 +69,7 @@ export default class OauthTokenManager {
     }
     
     async getToken() {
-        if (this.#currentToken) {
+        if (this.#currentToken && this.#tokenExpiresAt > Date.now()) {
             return this.#currentToken;
         }
         return this.fetchAccessToken();
