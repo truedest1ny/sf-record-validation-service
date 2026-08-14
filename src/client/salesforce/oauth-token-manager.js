@@ -14,6 +14,8 @@ export default class OauthTokenManager {
     #authClient = null;
     #currentToken = '';
 
+    #cachedPromise = null;
+
     constructor({domain, consumerKey, secret}){
 
         if (!domain?.trim() || !consumerKey?.trim() || !secret.trim()){
@@ -28,23 +30,36 @@ export default class OauthTokenManager {
     }
 
     async fetchAccessToken(){
-        const params = this.#setRequestParams();
-
-        try {
-
-            const response = await this.#authClient.post(this.#SF_TOKEN_ENDPOINT, params)
-            this.#currentToken = response.data[this.#ACCESS_TOKEN_KEY];
-
-        } catch (error){
-
-            if (error.response){
-                console.log(error.response.data);
-            }
-            throw error;
+        
+        if (this.#cachedPromise) {
+            return this.#cachedPromise;
         }
 
-        console.log('Token is successfully received');
-        return this.#currentToken;
+        const params = this.#setRequestParams();
+
+        const fetchTokenFunction = async () => {
+            try {
+                const response = await this.#authClient.post(this.#SF_TOKEN_ENDPOINT, params)
+                console.log(response.data);
+                this.#currentToken = response.data[this.#ACCESS_TOKEN_KEY];
+
+                console.log('Token is successfully received');
+                return this.#currentToken;
+
+            } catch(error){
+                if (error.response){
+                    console.log(error.response.data);
+                }
+                throw error;
+
+            } finally {
+                this.#cachedPromise = null;
+            }
+        };
+
+        this.#cachedPromise = fetchTokenFunction();
+
+        return this.#cachedPromise;
     }
     
     async getToken() {
