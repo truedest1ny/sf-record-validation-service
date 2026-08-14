@@ -8,11 +8,13 @@ export default class OauthTokenManager {
 
     #SF_TOKEN_ENDPOINT = '/services/oauth2/token';
     #GRANT_TYPE = 'client_credentials';
-
     #ACCESS_TOKEN_KEY = 'access_token';
-
     #DEFAULT_TOKEN_EXP_MS = 7_200_000;
 
+    #domain = '';
+    #consumerKey = '';
+    #secret = '';
+   
     #authClient = null;
     #currentToken = '';
     #tokenExpiresAt = 0;
@@ -21,13 +23,13 @@ export default class OauthTokenManager {
 
     constructor({domain, consumerKey, secret}){
 
-        if (!domain?.trim() || !consumerKey?.trim() || !secret.trim()){
+        if (!domain?.trim() || !consumerKey?.trim() || !secret?.trim()){
             throw new TypeError('Connection parameters must be inialized!');
         }
 
-        this.domain = domain;
-        this.consumerKey = consumerKey;
-        this.secret = secret;
+        this.#domain = domain;
+        this.#consumerKey = consumerKey;
+        this.#secret = secret;
 
         this.#authClient = this.#initializeAuthClient();
     }
@@ -47,7 +49,7 @@ export default class OauthTokenManager {
                 this.#currentToken = response.data[this.#ACCESS_TOKEN_KEY];
 
                 this.#tokenExpiresAt =
-                    Number(response.data?.issued_at) || Date.now() + this.#DEFAULT_TOKEN_EXP_MS;
+                    (Number(response.data?.issued_at) || Date.now()) + this.#DEFAULT_TOKEN_EXP_MS;
 
                 console.log('Token is successfully received');
                 return this.#currentToken;
@@ -78,14 +80,14 @@ export default class OauthTokenManager {
     #setRequestParams(){
         return new URLSearchParams({
             grant_type : this.#GRANT_TYPE,
-            client_id : this.consumerKey,
-            client_secret: this.secret,
+            client_id : this.#consumerKey,
+            client_secret: this.#secret,
         })
     }
 
     #initializeAuthClient(){
         return axios.create({
-            baseURL : 'https://' + this.domain,
+            baseURL : 'https://' + this.#domain,
             headers: {...this.#AUTH_CLIENT_HEADERS}
         });
     }
