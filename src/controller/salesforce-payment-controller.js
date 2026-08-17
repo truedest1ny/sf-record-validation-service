@@ -14,7 +14,7 @@ export default class SalesforcePaymentController {
         this.#transferService = transferService;
     }
 
-    async createPayments(req, res,){
+    async createPayments(req, res){
         const rawPayments = req.body?.payments || [];
 
         const mapper = new DtoMapper(PaymentDto, rawPayments);
@@ -34,7 +34,7 @@ export default class SalesforcePaymentController {
             );
         }
         
-        return res.json({
+        return res.status(201).json({
             success: true,
             sentRecordsCount: dtos.length,
             salesforceResult: sfResponse
