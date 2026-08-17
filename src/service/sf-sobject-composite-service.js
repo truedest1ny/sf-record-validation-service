@@ -22,6 +22,10 @@ export default class SalesforceSObjectCompositeService {
             return [];
         }
 
+        if (typeof mappingFunction !== 'function'){
+            throw new TypeError(`${mappingFunction} is not a function!`)
+        }
+
         const {allOrNone} = salesforceDmlConfig;
 
         const payload = dtos.map((dto) => ({
@@ -29,18 +33,11 @@ export default class SalesforceSObjectCompositeService {
             ...mappingFunction(dto)
         }));
 
-        try {
-            const response = await this.#apiClient.post(this.#RECORDS_CREATE_ENDPOINT, {
-                allOrNone,
-                records: payload
-            });
+        const response = await this.#apiClient.post(this.#RECORDS_CREATE_ENDPOINT, {
+            allOrNone,
+            records: payload
+        });
 
-            return response.data;
-        } catch (error) {
-            if (error.response) {
-                console.error('Salesforce Composite API Error:', error.response.data);
-            }
-            throw error;
-        }
+        return response.data;
     }
 }

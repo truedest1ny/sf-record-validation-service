@@ -4,12 +4,16 @@ export function buildNormalizedFieldsMap(fields){
 }
 
 export function getInstanceFieldsByClass(dtoClass){
-    if (typeof dtoClass !== "function") return [];
+    if (typeof dtoClass !== "function") {
+        throw new TypeError(`${dtoClass} is not a class!`)
+    };
     
     return Object.keys(new dtoClass());
 }
 
 export function mapDtoToSalesforcePayment(dto) {
+    if (!dto) return null;
+
     return {
         Amount__c: dto.amount,
         FirstName__c: dto.firstName,

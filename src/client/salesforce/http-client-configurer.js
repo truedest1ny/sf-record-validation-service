@@ -1,3 +1,5 @@
+import RequestError from "../../error/request-error.js";
+
 export default class HttpClientConfigurer {
     #tokenManager = null;
     #apiClient = null;
@@ -28,7 +30,7 @@ export default class HttpClientConfigurer {
             console.log('Token set to header request');
             return config;
 
-        } else throw new Error('Error while getting token');
+        } else throw new RequestError('Error while getting token');
 
     }
 
@@ -39,18 +41,17 @@ export default class HttpClientConfigurer {
             !originalRequest._retry){
 
             originalRequest._retry = true;
-            
-            try {
+        
                 const newToken = await this.#tokenManager.fetchAccessToken();
 
                 console.log('Token refreshed')
                 originalRequest.headers['Authorization'] = this.#getAuthorizationHeader(newToken);
     
-                return await this.#apiClient.request(originalRequest);
-    
-            } catch (error){
-                return Promise.reject(error);
-            }
+                try {
+                    return await this.#apiClient.request(originalRequest);
+                } catch (error) {
+                    throw new RequestError('Error while processing request')
+                }
         } 
         
         return Promise.reject(errorResponse);

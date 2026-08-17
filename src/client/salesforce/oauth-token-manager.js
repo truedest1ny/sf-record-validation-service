@@ -1,4 +1,5 @@
 import axios from "axios";
+import RequestError from "../../error/request-error.js";
 
 export default class OauthTokenManager {
 
@@ -45,7 +46,6 @@ export default class OauthTokenManager {
         const fetchTokenFunction = async () => {
             try {
                 const response = await this.#authClient.post(this.#SF_TOKEN_ENDPOINT, params)
-                console.log(response.data);
                 this.#currentToken = response.data[this.#ACCESS_TOKEN_KEY];
 
                 this.#tokenExpiresAt =
@@ -55,11 +55,7 @@ export default class OauthTokenManager {
                 return this.#currentToken;
 
             } catch(error){
-                if (error.response){
-                    console.log(error.response.data);
-                }
-                throw error;
-
+                throw new RequestError('Error while fetching access token')
             } finally {
                 this.#cachedPromise = null;
             }

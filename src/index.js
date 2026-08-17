@@ -3,8 +3,10 @@ import SalesforceSObjectCompositeService from "./service/sf-sobject-composite-se
 import { mapDtoToSalesforcePayment } from "./mapper/mapper-helper.js";
 import EnvFileReader from "./io/env-file-reader.js";
 import SalesforcePaymentController from "./controller/salesforce-payment-controller.js";
-import { setObjectCreateRoute } from "./route/salesforce-object-create-route.js";
+import { setObjectCreateRoute } from "./express/route/salesforce-object-create-route.js";
 import HttpClientFactory from "./client/http-client-factory.js";
+import { globalErrorHandler } from "./express/middleware/error-handler.js";
+
 
 const DOMAIN_KEY = 'SF_ORG_DOMAIN';
 const CLIENT_KEY = 'SF_CONSUMER_KEY';
@@ -36,6 +38,7 @@ async function main() {
     setObjectCreateRoute(router, (req, res) => sfPaymentController.createPayments(req, res));
 
     app.use(router);
+    app.use(globalErrorHandler);
    
     const port = 8888;
     app.listen(port, () => console.log(`Server starts listening at port ${port}`));
