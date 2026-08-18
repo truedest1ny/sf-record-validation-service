@@ -2,6 +2,10 @@ import express from "express";
 import { initDependencies } from "./app-container.js";
 import { globalErrorHandler } from "./express/middleware/error-handler.js";
 
+import EnvFileManager from "./io/env-file-manager.js";
+
+const filename = '.env';
+
 function main() {
   const app = express();
 
@@ -11,10 +15,14 @@ function main() {
   app.use(router);
   app.use(globalErrorHandler);
 
-  const port = 8888;
+  const envFileManager = new EnvFileManager(filename);
+  const { port } = envFileManager.getSystemProps();
+
   app.listen(port, () => console.log(`Server starts listening at port ${port}`));
 }
 
 main();
+
+
 
 
