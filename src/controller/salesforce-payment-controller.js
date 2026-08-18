@@ -6,12 +6,12 @@ import SalesforceError from '../error/salesforce-error.js';
 
 export default class SalesforcePaymentController {
 
-    #ALL_OR_NONE_STATUS = 'ALL_OR_NONE_OPERATION_ROLLED_BACK';
+    #sObjectCompositeService;
+    #errorFormatter;
 
-    #transferService;
-
-    constructor(transferService){
-        this.#transferService = transferService;
+    constructor(sObjectCompositeService, errorFormatter){
+        this.#sObjectCompositeService = sObjectCompositeService;
+        this.#errorFormatter = errorFormatter;
     }
 
     async createPayments(req, res){
@@ -22,22 +22,46 @@ export default class SalesforcePaymentController {
 
         const allOrNone = true;
 
-        const sfResponse = await this.#transferService.createRecords(
+        const sfResponse = await this.#sObjectCompositeService.createRecords(
         'Payment__c', dtos, mapDtoToSalesforcePayment, {allOrNone});
 
-        const hasErrors = sfResponse.some(record => !record.success);
+        const normalizedResult = sfResponse.map(
+            (record, index) => this.#normalizeResponseRecord(record, index)
+        );
 
-        if (allOrNone && hasErrors){
+        const normalizedErrorResponse = normalizedResult.filter((record) => !record.success && record.errors.length > 0);
+
+        if (allOrNone && normalizedErrorResponse.length > 0){
             throw new SalesforceError(
                 'Salesforce: Transaction has been rolled back.' +
-                'You enabled AllOrNone option and at least one record failed'
+                'You enabled AllOrNone option and at least one record failed', normalizedErrorResponse
             );
         }
         
         return res.status(201).json({
             success: true,
             sentRecordsCount: dtos.length,
-            salesforceResult: sfResponse
+            salesforceResult: normalizedResult
         });
+    }
+
+    #normalizeResponseRecord(record, index) {
+        const normalizedIndex = index + 1;
+
+        if (record.success){
+            return {
+                record : normalizedIndex,
+                success : true,
+                id : record.id
+            };
+        }
+
+        const formattedErrors = this.#errorFormatter.formatErrors(record.errors);
+
+        return {
+            record : normalizedIndex,
+            success : false,
+            errors : formattedErrors
+        };
     }
 }
