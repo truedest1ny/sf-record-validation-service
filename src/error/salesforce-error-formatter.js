@@ -15,9 +15,13 @@ export default class SalesforceErrorFormatter {
     };
 
     formatErrors(errors = []){
-        return errors
-            .filter((error) => this.#isRootError(error))
-            .map((error) => this.#formatSingleError(error));
+        const formattedErrors = errors.map((error) => this.#formatSingleError(error));
+        const hasRootCause = errors.some((error) => this.#isRootError(error));
+
+        return {
+            formattedErrors: formattedErrors,
+            hasRootCause : hasRootCause
+        };
     }
 
     #formatSingleError(sfError) {

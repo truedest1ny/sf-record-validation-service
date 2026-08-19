@@ -14,28 +14,20 @@ export default class SalesforcePaymentController {
         this.#errorFormatter = errorFormatter;
     }
 
-    async createPayments(req, res){
+    async createPayments(req, res) {
         const rawPayments = req.body?.payments || [];
+        const allOrNone = req.body?.allOrNone ?? true;
 
         const mapper = new DtoMapper(PaymentDto, rawPayments);
         const dtos = mapper.parseJsonData();
 
-        const allOrNone = true;
-
         const sfResponse = await this.#sObjectCompositeService.createRecords(
         'Payment__c', dtos, mapDtoToSalesforcePayment, {allOrNone});
 
-        const normalizedResult = sfResponse.map(
-            (record, index) => this.#normalizeResponseRecord(record, index)
-        );
+        const normalizedResult = this.#normalizeResponse(sfResponse);
 
-        const normalizedErrorResponse = normalizedResult.filter((record) => !record.success && record.errors.length > 0);
-
-        if (allOrNone && normalizedErrorResponse.length > 0){
-            throw new SalesforceError(
-                'Salesforce: Transaction has been rolled back.' +
-                'You enabled AllOrNone option and at least one record failed', normalizedErrorResponse
-            );
+        if (allOrNone) {
+            this.#validateRollbackErrors(normalizedResult);
         }
         
         return res.status(201).json({
@@ -45,23 +37,39 @@ export default class SalesforcePaymentController {
         });
     }
 
-    #normalizeResponseRecord(record, index) {
-        const normalizedIndex = index + 1;
+    #normalizeResponse(response) {
+        const normalizedResult = response.map((record, index) => {
+           const normalizedIndex = index + 1;
 
-        if (record.success){
+            if (record.success){
+                return {
+                    record : normalizedIndex,
+                    success : true,
+                    id : record.id
+                };
+            }
+
+            const {formattedErrors , hasRootCause} = this.#errorFormatter.formatErrors(record.errors);
+
             return {
                 record : normalizedIndex,
-                success : true,
-                id : record.id
-            };
+                success : false,
+                errors : formattedErrors,
+                hasRootCause : hasRootCause
+            }; 
+        })
+
+        return normalizedResult;
+    }
+
+    #validateRollbackErrors(normalizedResponse) {
+        const rootErrors = normalizedResponse.filter((record) => record.hasRootCause);
+
+        if (rootErrors.length > 0) {
+            throw new SalesforceError(
+                'Salesforce: Transaction has been rolled back. ' +
+                'You enabled AllOrNone option and at least one record failed', rootErrors
+            );
         }
-
-        const formattedErrors = this.#errorFormatter.formatErrors(record.errors);
-
-        return {
-            record : normalizedIndex,
-            success : false,
-            errors : formattedErrors
-        };
     }
 }
