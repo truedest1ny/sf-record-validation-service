@@ -10,6 +10,19 @@ export default class SalesforcePaymentController {
     #errorFormatter;
 
     constructor(sObjectCompositeService, errorFormatter){
+
+        if (!sObjectCompositeService || typeof sObjectCompositeService.createRecords !== 'function') {
+            throw new TypeError(
+                'sObjectCompositeService is required and must implement a createRecords method.'
+            );
+        }
+
+        if (!errorFormatter || typeof errorFormatter.formatErrors !== 'function') {
+            throw new TypeError(
+                'errorFormatter is required and must implement a formatErrors method.'
+            );
+        }
+
         this.#sObjectCompositeService = sObjectCompositeService;
         this.#errorFormatter = errorFormatter;
     }
