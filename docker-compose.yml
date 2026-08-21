@@ -1,0 +1,8 @@
+services:
+  salesforce-app:
+    build: .
+    container_name: sf-payment-service
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env
