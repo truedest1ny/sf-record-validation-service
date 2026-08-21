@@ -1,6 +1,6 @@
 export default class SalesforceErrorFormatter {
     #SF_ERROR_TRANCRIPTION = {
-        REQUIRED_FIELD_MISSING: 'A required field is missing. Please check your input.',
+        REQUIRED_FIELD_MISSING: 'A required field is missing or incorrect. Please check your input.',
         DUPLICATES_DETECTED: 'A record with matching information already exists.',
         DUPLICATE_VALUE: 'A duplicate value was detected for a unique field.',
         STRING_TOO_LONG: 'The entered text exceeds the maximum character limit.',

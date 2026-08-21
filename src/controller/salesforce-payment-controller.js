@@ -42,6 +42,8 @@ export default class SalesforcePaymentController {
         if (allOrNone) {
             this.#validateRollbackErrors(normalizedResult);
         }
+
+        this.#validateSuccessfulRecordsCount(normalizedResult)
         
         return res.status(201).json({
             success: true,
@@ -83,6 +85,14 @@ export default class SalesforcePaymentController {
                 'Salesforce: Transaction has been rolled back. ' +
                 'You enabled AllOrNone option and at least one record failed', rootErrors
             );
+        }
+    }
+
+    #validateSuccessfulRecordsCount(normalizedResponce){
+        const hasSuccess = normalizedResponce.some((record) => record.success);
+        if (!hasSuccess) {
+            throw new SalesforceError(
+                'Salesforce: All records failed to process', normalizedResponce);
         }
     }
 }

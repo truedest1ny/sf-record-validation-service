@@ -11,7 +11,10 @@ export default class DtoMapper {
 
     #mapJsonToDto(jsonItem, fieldsMap) {
 
-        if (!jsonItem || typeof jsonItem !== 'object') {
+        if (!jsonItem ||
+            typeof jsonItem !== 'object' ||
+            Object.keys(jsonItem).length === 0) {
+
             return null;
         }
 
@@ -26,6 +29,11 @@ export default class DtoMapper {
                 rawData[targetDtoField] = value;
             }
         }
+
+        if (Object.keys(rawData).length === 0) {
+            return null;
+        }
+
         return new this.#dtoClass(rawData);
     }
 
@@ -33,6 +41,9 @@ export default class DtoMapper {
         const dtoFields = getInstanceFieldsByClass(this.#dtoClass);
         const fieldMap = buildNormalizedFieldsMap(dtoFields);
 
-        return this.#jsonData.map((item) => this.#mapJsonToDto(item, fieldMap));
+        return this.#jsonData.map((item) => this.#mapJsonToDto(item, fieldMap))
+                            .filter((item) => item !== null);
     }
+
+
 }
